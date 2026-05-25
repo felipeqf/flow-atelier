@@ -1,15 +1,13 @@
-"""Test that WebSocket emits StepMessage when tasks have steps."""
+"""Test that WebSocket emits step messages correctly for harness vs non-harness tasks."""
 from __future__ import annotations
 
 from app.schemas.log import IntermediateStep, StepKind, TaskEvent
 from app.schemas.progress import TaskStatus
 
 
-async def test_step_messages_emitted_for_task_with_steps() -> None:
-    """When a TaskEvent contains steps, the WS route should emit
-    individual StepMessage envelopes alongside the StepStatusMessage."""
-    # Import the route's _on_task_event factory indirectly by checking the
-    # emitted messages through a mock broker.
+async def test_step_messages_emitted_for_non_harness_task() -> None:
+    """Non-harness tasks (bash, hitl, conduit) should emit individual StepMessage
+    envelopes from on_task_event."""
     from app.routes.ws import _step_status_for
 
     steps = [
@@ -18,16 +16,15 @@ async def test_step_messages_emitted_for_task_with_steps() -> None:
     ]
     event = TaskEvent(
         task="build",
-        tool="harness:claude-code",
+        tool="tool:bash",
         success=True,
         status=TaskStatus.completed,
         steps=steps,
     )
 
-    # Verify the helper function still works
     assert _step_status_for(event) == "completed"
+    assert not event.tool.startswith("harness:")
 
-    # Build the expected step message format
     for step in steps:
         msg = {
             "type": "step",
@@ -37,3 +34,19 @@ async def test_step_messages_emitted_for_task_with_steps() -> None:
         }
         assert msg["type"] == "step"
         assert msg["task"] == "build"
+
+
+async def test_step_messages_skipped_for_harness_task() -> None:
+    """Harness tasks stream steps live via WsPromptSink, so on_task_event
+    should skip the step iteration."""
+    event = TaskEvent(
+        task="scrape",
+        tool="harness:opencode",
+        success=True,
+        status=TaskStatus.completed,
+        steps=[
+            IntermediateStep(kind=StepKind.thinking, text="planning"),
+        ],
+    )
+
+    assert event.tool.startswith("harness:")

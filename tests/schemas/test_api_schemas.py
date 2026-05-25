@@ -90,7 +90,6 @@ def test_run_task_input_validates_minimum_fields():
             "description": "d",
             "task": "echo hello",
             "tool": "tool:bash",
-            "inputs": {},
             "run_path": "/tmp/x",
         }
     )

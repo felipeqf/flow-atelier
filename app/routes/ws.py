@@ -22,6 +22,7 @@ from app.schemas.ws import (
 from app.services.api.base import get_atelier
 from app.services.api.ws_hitl import WsHitlExecutor
 from app.services.api.ws_manager import WebSocketBroker
+from app.services.api.ws_sink import WsPromptSink
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -118,7 +119,10 @@ async def _spawn_run(
     """
     # Per-connection Atelier instance keeps executor swaps from leaking
     # across sockets (SPEC §10 / risk table).
-    atelier = Atelier(base_dir=base_atelier.settings.global_atelier_dir)
+    atelier = Atelier(
+        base_dir=base_atelier.settings.global_atelier_dir,
+        prompt_sink=WsPromptSink(broker, message.flow_id),
+    )
     broker.register_flow(message.flow_id)
     atelier.executors["tool:hitl"] = WsHitlExecutor(
         broker=broker, flow_id=message.flow_id
@@ -129,16 +133,18 @@ async def _spawn_run(
 
         :param event: task event produced by the engine.
         """
-        # Emit intermediate steps as individual StepMessage envelopes
-        for step in event.steps:
-            await broker.send(
-                {
-                    "type": "step",
-                    "flow_id": message.flow_id,
-                    "task": event.task,
-                    "step": step.model_dump(mode="json"),
-                }
-            )
+        # Harness tasks stream steps live via WsPromptSink.display_step;
+        # only emit batched steps for non-harness tools (bash, hitl, conduit).
+        if not event.tool.startswith("harness:"):
+            for step in event.steps:
+                await broker.send(
+                    {
+                        "type": "step",
+                        "flow_id": message.flow_id,
+                        "task": event.task,
+                        "step": step.model_dump(mode="json"),
+                    }
+                )
         await broker.send(
             {
                 "type": "step_status",

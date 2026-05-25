@@ -37,7 +37,6 @@ async def _seed_flow(atelier: Atelier) -> str:
             description="d",
             task="echo flow-api-output",
             tool="tool:bash",
-            inputs={},
             run_path="/tmp",
         )
     )

@@ -28,7 +28,6 @@ async def test_run_single_task_runs_bash_echo_and_returns_logs(atelier):
         description="ad-hoc echo",
         task="echo hello-from-task",
         tool="tool:bash",
-        inputs={},
         run_path="/tmp",
     )
     out = await atelier.run_single_task(payload)
@@ -49,7 +48,6 @@ async def test_run_single_task_persists_flow_dir(atelier):
         description="ad-hoc echo",
         task="echo persisted",
         tool="tool:bash",
-        inputs={},
         run_path="/tmp",
     )
     out = await atelier.run_single_task(payload)
@@ -67,7 +65,6 @@ async def test_run_single_task_failure_returns_non_zero_exit(atelier):
         description="explode",
         task="exit 7",
         tool="tool:bash",
-        inputs={},
         run_path="/tmp",
     )
     out = await atelier.run_single_task(payload)

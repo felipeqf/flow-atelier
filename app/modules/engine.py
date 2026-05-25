@@ -18,6 +18,7 @@ import asyncio
 import sys
 import traceback
 from collections.abc import Callable
+from contextvars import ContextVar
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -51,6 +52,9 @@ def _now() -> str:
     :returns: ISO-8601 timestamp ending with ``Z``.
     """
     return datetime.now(UTC).isoformat().replace("+00:00", "Z")
+
+
+_current_task_ctx: ContextVar[str] = ContextVar("current_task_name", default="")
 
 
 def _validate_dag(conduit: Conduit) -> dict[str, list]:
@@ -346,6 +350,7 @@ class Engine:
             :param t: task definition to execute.
             """
             nonlocal failed, failure_error
+            _current_task_ctx.set(t.name)
             try:
                 # Resolve {{task.output}} templates now (inputs resolved per-iteration)
                 unavailable = {

@@ -29,7 +29,6 @@ async def test_list_prior_flows_after_run_returns_one(atelier):
         description="d",
         task="echo hi",
         tool="tool:bash",
-        inputs={},
         run_path="/tmp",
     )
     out = await atelier.run_single_task(payload)
@@ -50,7 +49,6 @@ async def test_get_flow_logs_round_trips(atelier):
         description="d",
         task="echo round-trip",
         tool="tool:bash",
-        inputs={},
         run_path="/tmp",
     )
     out = await atelier.run_single_task(payload)

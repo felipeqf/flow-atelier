@@ -238,7 +238,7 @@ class Atelier:
         """
         conduit = Conduit.model_validate(
             {
-                "name": f"adhoc__{payload.name}",
+                "name": f"task__{payload.name}",
                 "description": payload.description or payload.name,
                 "tasks": [
                     {
@@ -262,7 +262,10 @@ class Atelier:
 
         try:
             flow_id = await self.engine.run(
-                conduit, dict(payload.inputs), on_flow_started=_on_started
+                conduit,
+                {},
+                on_flow_started=_on_started,
+                working_dir=Path(payload.run_path) if payload.run_path else None,
             )
         except Exception:  # noqa: BLE001
             flow_id = captured["id"] or ""
@@ -339,13 +342,14 @@ class Atelier:
         :param run_path: absolute path to open
         :returns: True if the platform opener was launched, False otherwise
         """
+        target = str(Path(run_path))
         cmd: list[str]
         if sys.platform == "darwin":
-            cmd = ["open", run_path]
+            cmd = ["open", target]
         elif sys.platform == "win32":
-            cmd = ["explorer", run_path]
+            cmd = ["explorer", target]
         else:
-            cmd = ["xdg-open", run_path]
+            cmd = ["xdg-open", target]
         try:
             subprocess.Popen(cmd)
         except (FileNotFoundError, OSError) as e:

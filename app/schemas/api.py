@@ -57,7 +57,6 @@ class RunTaskInput(BaseModel):
     description: str = ""
     task: str
     tool: str
-    inputs: dict[str, Any] = Field(default_factory=dict)
     run_path: str
 
 

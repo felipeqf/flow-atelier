@@ -3,7 +3,7 @@
 Each harness is a thin :class:`AcpHarnessExecutor` subclass differing only
 in its ``launch_cmd``. Each reuses the host CLI's own config and auth.
 
-- ``harness:claude-code`` → ``@zed-industries/claude-code-acp`` via ``npx``
+- ``harness:claude-code`` → ``@agentclientprotocol/claude-agent-acp`` via ``npx``
 - ``harness:codex``       → ``@zed-industries/codex-acp`` via ``npx``
 - ``harness:opencode``    → ``opencode acp`` (native ACP)
 - ``harness:copilot``     → ``copilot --acp`` (GitHub Copilot CLI, native ACP)
@@ -116,7 +116,7 @@ def _pick_permissive_mode(state: SessionModeState | None) -> str | None:
 CLAUDE_ACP_LAUNCH = [
     "npx",
     "-y",
-    "@zed-industries/claude-code-acp@0.16.2",
+    "@agentclientprotocol/claude-agent-acp@0.37.0",
 ]
 CODEX_ACP_LAUNCH = [
     "npx",

@@ -31,7 +31,7 @@ class AtelierSettings(BaseSettings):
         default_factory=list,
         description=(
             "Override argv for the harness:claude-code ACP agent. "
-            "Empty = use the bundled default (@zed-industries/claude-code-acp)."
+            "Empty = use the bundled default (@agentclientprotocol/claude-agent-acp)."
         ),
     )
     codex_launch_cmd: list[str] = Field(
