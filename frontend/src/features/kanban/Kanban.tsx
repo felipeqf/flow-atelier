@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, type ReactNode } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -113,7 +113,21 @@ function tasksStructuralEqual(a: Task[], b: Task[]) {
   });
 }
 
-export function Kanban() {
+/**
+ * Optional composer slot: when provided (the chat tab), the page becomes a
+ * fixed-height column — board scrolling on top, the composer pinned below —
+ * and the slot receives the project a typed task should land in. Without it,
+ * /kanban renders exactly what it always has.
+ */
+export interface KanbanComposerCtx {
+  projectId: string;
+}
+
+interface KanbanProps {
+  composer?: (ctx: KanbanComposerCtx) => ReactNode;
+}
+
+export function Kanban({ composer }: KanbanProps) {
   const tasks = useStoreWithEqualityFn(useTaskStore, (s) => s.tasks, tasksStructuralEqual);
   const [selectedName, setSelectedName] = useState<string | undefined>();
   const [addOpen, setAddOpen] = useState(false);
@@ -281,8 +295,15 @@ export function Kanban() {
     return t.projectId === activeProject.id;
   }, [showAllProjects, activeProject.id]);
 
-  return (
-    <div className="min-h-[calc(100dvh-3.5rem)] px-4 py-6 lg:px-10 lg:py-10">
+  // Same resolution the NewTaskDialog gets: a typed task needs a project, and
+  // "all projects" is a filter, not a home — fall back to the first project.
+  const effectiveProjectId = showAllProjects
+    ? (projects[0]?.id ?? "default")
+    : activeProject.id;
+
+  // Header + toolbar + board, shared verbatim by both layouts below.
+  const board = (
+    <>
       {/* The 52px serif title that used to sit here repeated the active nav
           item; the top bar's wordmark carries the brand voice now. */}
       <header className="mx-auto mb-6 flex max-w-[1280px] items-baseline justify-between gap-4 border-b border-border pb-4 lg:mb-8">
@@ -405,7 +426,13 @@ export function Kanban() {
         </DragOverlay>
         </DndContext>
       </div>
+    </>
+  );
 
+  // Drawer + dialogs are portals, so they sit outside the scroll wrapper
+  // either way and never reflow when the layout switches.
+  const overlays = (
+    <>
       <TaskDrawer
         taskName={selectedName}
         onClose={() => setSelectedName(undefined)}
@@ -415,7 +442,7 @@ export function Kanban() {
         onRespondToHitl={conduitAnswerHITL}
         onAnswerAgentInput={conduitAnswerAgentInput}
       />
-      <NewTaskDialog open={addOpen} onOpenChange={closeDialog} editTask={editTask} onRun={runTaskByName} projectId={showAllProjects ? (projects[0]?.id ?? "default") : activeProject.id} />
+      <NewTaskDialog open={addOpen} onOpenChange={closeDialog} editTask={editTask} onRun={runTaskByName} projectId={effectiveProjectId} />
       <NewProjectDialog open={newProjectOpen} onOpenChange={setNewProjectOpen} onCreate={handleCreateProject} />
       <DeleteProjectDialog
         open={deleteProjectOpen}
@@ -424,6 +451,25 @@ export function Kanban() {
         hasHistory={projectHasHistory}
         onConfirm={handleDeleteProject}
       />
+    </>
+  );
+
+  if (composer) {
+    return (
+      <div className="flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto px-4 py-6 lg:px-10 lg:py-10">
+          {board}
+        </div>
+        {composer({ projectId: effectiveProjectId })}
+        {overlays}
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-[calc(100dvh-3.5rem)] px-4 py-6 lg:px-10 lg:py-10">
+      {board}
+      {overlays}
     </div>
   );
 }

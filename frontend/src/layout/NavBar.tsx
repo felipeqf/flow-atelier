@@ -6,6 +6,7 @@ const NAV = [
   { to: "/dashboard", label: "dashboard" },
   { to: "/designer", label: "designer" },
   { to: "/kanban", label: "kanban" },
+  { to: "/chat", label: "chat" },
 ] as const;
 
 export function TopBar() {
@@ -14,25 +15,26 @@ export function TopBar() {
       data-testid="top-bar"
       className="sticky top-0 z-sticky flex h-14 items-center gap-2 border-b border-border bg-background/90 px-3 backdrop-blur sm:gap-6 sm:px-6"
     >
-      {/* mr-auto replaces the empty aria-hidden flex-1 spacer that used to sit
-          between the wordmark and the nav. min-w-0 + truncate lets the wordmark
-          give way rather than pushing the theme toggle off-screen: at 390px the
-          three 44px nav targets plus the toggle leave it very little room. */}
+      {/* The wordmark used to shrink ("flow-" drops below sm) — enough for
+          three nav targets. A fourth (chat) leaves no room at 390px, and a
+          truncated "ateli…" reads broken rather than tight, so on phones the
+          brand hides entirely: DASHBOARD is the same destination, and the nav
+          itself scrolls if a narrower phone still can't fit the four links. */}
       <NavLink
         to="/dashboard"
         aria-label="flow-atelier home"
-        className="mr-auto flex h-11 shrink-0 items-center whitespace-nowrap"
+        className="mr-auto hidden h-11 shrink-0 items-center whitespace-nowrap sm:flex"
       >
-        {/* Drops the "flow-" half below sm rather than ellipsizing the brand:
-            three 44px nav targets plus the theme toggle leave under 180px here,
-            and a wordmark reading "flow-ate…" looks broken rather than tight. */}
         <span className="font-display text-lg leading-none sm:text-xl">
           <span className="hidden sm:inline">flow-</span>
           <em className="text-primary italic">atelier</em>
         </span>
       </NavLink>
 
-      <nav className="flex shrink-0 items-center" aria-label="primary">
+      <nav
+        aria-label="primary"
+        className="mr-auto flex min-w-0 items-center overflow-x-auto max-sm:flex-1 sm:mr-0 sm:flex-initial"
+      >
         {NAV.map((n) => (
           <NavLink
             key={n.to}
