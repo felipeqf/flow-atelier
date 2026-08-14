@@ -189,7 +189,9 @@ export function startTask(taskName: string): { needsConduitRun: boolean } {
         name: task.name,
         description: task.description,
         tool: task.tool,
-        runPath: task.runPath,
+        // run_path is a required field on the backend schema; "" encodes
+        // "no working dir" (undefined would drop the key and 422).
+        runPath: task.runPath ?? "",
         task: task.prompt,
       })
         .then((res) => {
@@ -220,7 +222,9 @@ export function startTask(taskName: string): { needsConduitRun: boolean } {
       name: task.name,
       description: task.description,
       tool: task.tool,
-      runPath: task.runPath,
+      // run_path is a required field on the backend schema; "" encodes
+      // "no working dir" (undefined would drop the key and 422).
+      runPath: task.runPath ?? "",
       task: task.prompt,
     })
       .then((res) => {

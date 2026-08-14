@@ -6,21 +6,23 @@ import type { Task, ToolType } from "@/types/task";
 export const COMPOSER_DEFAULT_TOOL: ToolType = "tool:bash";
 
 // The store is keyed by name and upsert overwrites, so a slug that collides
-// with an existing card gets a counter instead of clobbering it.
+// with an existing card gets a counter instead of clobbering it. Underscores,
+// not hyphens: the backend's task grammar is ^[A-Za-z0-9_]+$ (a hyphenated
+// name is a 400 at run time), and every seeded task already reads like this.
 function slugify(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
     .slice(0, 32)
-    .replace(/-+$/, "");
+    .replace(/_+$/, "");
 }
 
 function uniqueName(base: string, taken: Set<string>): string {
   const stem = base || "task";
   if (!taken.has(stem)) return stem;
   for (let i = 2; ; i++) {
-    const candidate = `${stem}-${i}`;
+    const candidate = `${stem}_${i}`;
     if (!taken.has(candidate)) return candidate;
   }
 }

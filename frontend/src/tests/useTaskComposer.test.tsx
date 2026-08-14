@@ -38,7 +38,7 @@ describe("useTaskComposer", () => {
 
     expect(useTaskStore.getState().tasks).toHaveLength(1);
     expect(task).toMatchObject({
-      name: "fix-the-login-redirect",
+      name: "fix_the_login_redirect",
       description: "Fix the login redirect",
       prompt: "Fix the login redirect",
       tool: "tool:bash",
@@ -91,7 +91,7 @@ describe("useTaskComposer", () => {
 
     // The store prepends on upsert (newest first), so compare as a set.
     const names = useTaskStore.getState().tasks.map((t) => t.name);
-    expect(names.slice().sort()).toEqual(["same-task", "same-task-2", "same-task-3"]);
+    expect(names.slice().sort()).toEqual(["same_task", "same_task_2", "same_task_3"]);
   });
 
   it("keeps the slug short and falls back when nothing is left to keep", () => {

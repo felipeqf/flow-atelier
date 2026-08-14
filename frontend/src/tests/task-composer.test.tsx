@@ -46,7 +46,7 @@ describe("TaskComposer", () => {
 
     expect(useTaskStore.getState().tasks).toHaveLength(1);
     expect(useTaskStore.getState().tasks[0]).toMatchObject({
-      name: "write-the-migration-notes",
+      name: "write_the_migration_notes",
       column: "todo",
       projectId: "p1",
     });
@@ -99,6 +99,6 @@ describe("Chat page", () => {
 
     const todo = screen.getByTestId("column-todo");
     expect(todo.querySelector('[data-testid="task-card"]')?.getAttribute("data-task-id"))
-      .toBe("review-the-open-prs");
+      .toBe("review_the_open_prs");
   });
 });
